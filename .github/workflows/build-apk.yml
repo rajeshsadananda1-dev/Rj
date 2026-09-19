@@ -30,11 +30,42 @@ jobs:
           unzip -q gradle-8.9-bin.zip -d "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/gradle-8.9/bin" >> "$GITHUB_PATH"
 
-      - name: Build APK
+      - name: Fix Java and Kotlin targets
+        run: |
+          cat > project/RJ_Android_App/app/build.gradle.kts <<'EOF'
+          plugins {
+              id("com.android.application")
+              id("org.jetbrains.kotlin.android")
+          }
+
+          android {
+              namespace = "com.rj.password"
+              compileSdk = 35
+
+              defaultConfig {
+                  applicationId = "com.rj.password"
+                  minSdk = 24
+                  targetSdk = 35
+                  versionCode = 1
+                  versionName = "1.0"
+              }
+
+              compileOptions {
+                  sourceCompatibility = JavaVersion.VERSION_17
+                  targetCompatibility = JavaVersion.VERSION_17
+              }
+
+              kotlinOptions {
+                  jvmTarget = "17"
+              }
+          }
+          EOF
+
+      - name: Build RJ APK
         working-directory: project/RJ_Android_App
         run: gradle :app:assembleDebug --no-daemon --stacktrace
 
-      - name: Upload APK
+      - name: Upload RJ APK
         uses: actions/upload-artifact@v4
         with:
           name: RJ-Version3-APK
